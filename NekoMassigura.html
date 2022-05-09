@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <title>
+        Reactを触る
+    </title>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react-dom.js"></script>
+    
+    <h3>Reactを使ってなにか作ってみる</h3>
+    ﾎﾞﾀﾝﾈｺ: ボタンを押すとﾈｺが動く。OnClickだけの簡単なお仕事<br /><br />
+    ｵｯｶｹﾈｺ: マウスポインタをﾈｺがおいかける。mousemoveのイベントとってきた<br /><br />
+    ﾊﾝｺﾉﾈｺ: スペースキーでランダムなﾈｺのハンコを押す。keydownの追加<br /><br />
+    ﾌｷｿｸﾈｺ: ブラウン運動するﾈｺ。setIntervalでいい感じに定時実行<br />
+    <a href="https://ja.wikipedia.org/wiki/%E3%83%96%E3%83%A9%E3%82%A6%E3%83%B3%E9%81%8B%E5%8B%95" target="_brank" rel="noopener noreferrer">
+        ブラウン運動</a>ってどちらかというと<a href="https://ja.wikipedia.org/wiki/%E3%82%A2%E3%83%AB%E3%83%99%E3%83%AB%E3%83%88%E3%83%BB%E3%82%A2%E3%82%A4%E3%83%B3%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%A4%E3%83%B3" target="_brank" rel="noopener noreferrer">
+            さいころ振らない側</a>。<a href="https://ja.wikipedia.org/wiki/%E3%82%B7%E3%83%A5%E3%83%AC%E3%83%BC%E3%83%87%E3%82%A3%E3%83%B3%E3%82%AC%E3%83%BC%E3%81%AE%E7%8C%AB" target="_brank" rel="noopener noreferrer">ﾈｺなのに</a><br /><br />
+    ﾊｯｼｬﾈｺ: シフトキーを押すと発射されるﾈｺ。500*500の範囲で反射する<br /><br />
+    ｽｼﾈﾀﾈｺ: ネタ切れを起こしている。寿司なのに。お寿司クリックでﾈｺが食べちゃう<br />
+    ミミガイ（アワビなどのグループの貝）はﾈｺに食べさせてはいけない<br /><br />
+    <br />
+    ｶﾝｿｳﾈｺ: 機能を後から追加、修正する際には該当するクラスのみいじればいいので容易かも。<br />
+    DOM関連のレンダリングの詳細に関しては中身の理解がもっと必要。<br />
+    にゃヾ(^ΦωΦ^)/<br />
+
+    <div id="stage"></div>
+    <div id="mouseNeko"></div>
+    <div id="nekoStamps"></div>
+    <div id="brownNeko"></div>
+    <div id="ShotNeko"></div>
+    <div id="NetaNeko"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.10.3/babel.min.js"></script>
+
+    <script type="text/babel">
+        //完全にネタ切れ
+        //すしネタでも流すか
+        class NetaNeko extends React.Component{
+            constructor(props){
+                super (props);
+                this.state={
+                    x: 0,
+                    Lane: [],
+                    Sushineta: ["=･ω･= ｱｼﾞ!!",
+                    "⊂=^* ºωº*^=っｻﾊﾞｯ",
+                    "ฅ^･ω･^ ฅ ﾐｬｸﾞﾛｯ!",
+                    "Σ(^ФωФ^=ﾉ)ﾉ ﾐﾐｶﾞｲｯ?!?",
+                    "~(=^･ω･^)ﾉ☆ ﾀｲ~♪",
+                    "^Ф∀Ф^ ｴﾝｶﾞﾜ!!",
+                    "^ↀᴥↀ^ ﾀﾏｺﾞ??",
+                    "",
+                    "ฅ^-皿-^ฅ ｺﾞﾁｿｳｻﾏ,ﾆｬ",
+                    "=;ω;= ﾐﾐｶﾞｵﾁﾀ, ﾆｬ..."
+                    ],}
+
+                this.NetaGenerate=this.NetaGenerate.bind(this);
+                this.NetaTori=this.NetaTori.bind(this);
+                setInterval(this.NetaGenerate,30);
+            }
+
+            NetaGenerate(){
+                //console.log(this.state);
+                if (-200<this.state.x){
+                    this.setState({
+                        x: this.state.x-2
+                    })
+                }
+                else{
+                    this.setState({
+                        x: 0,
+                        Lane: (this.state.Lane).slice(1)
+                    })
+
+                    //console.log(this.state.Lane);
+                }
+
+                while (this.state.Lane.length<4){
+                    this.setState({
+                        Lane: this.state.Lane.concat(Math.floor(Math.random()*this.state.Sushineta.length-2))
+                    })
+                }
+                //console.log(this.state.Lane);
+            }
+
+            NetaTori(e){
+                var x=(e.currentTarget.getAttribute("data-num"));
+                //console.log(x);
+                var neta=(e.currentTarget.getAttribute("data-neta"));
+                if (neta==3){
+                    this.setState({
+                        Lane: this.state.Lane.slice(0,x-1).concat(9).concat(this.state.Lane.slice(x))
+                    })
+                }
+                else if(neta<9){
+                    this.setState({
+                        Lane: this.state.Lane.slice(0,x-1).concat(8).concat(this.state.Lane.slice(x))
+                    })
+                }
+            }
+
+            render(){
+                var cnt=0;
+                return (
+                    <div>
+                        {
+                            this.state.Lane.map(Neta=>{
+                                let nekoStyle={
+                                    position: "fixed",
+                                    left: (this.state.x+200*cnt),
+                                    buttom: 20
+                                };
+                                cnt+=1;
+                                //console.log(cnt);
+                                return(<div style={nekoStyle} key={cnt} onClick={this.NetaTori} data-num={cnt} data-neta={Neta}>
+                                    {this.state.Sushineta[Neta]}</div>)
+                            })
+                        }
+                    </div>
+                );
+            }
+        }
+        ReactDOM.render(
+            <NetaNeko />,
+            document.getElementById("NetaNeko")
+        );
+
+        //継承は構造が複雑になるから非推奨らしい。親が1人とかチェーンとかうんぬん...
+        //たしかにクラスごとに疎であるのがいいって言ってたなぁ
+        //そろそろネタもきれてきたぞ
+        class ShotNeko extends React.Component{
+            constructor(props){
+                super(props);
+                this.state={
+                    mx: 0,
+                    my: 0,
+                    x: 290,
+                    y: 400,
+                    vx: 0,
+                    vy: 0
+                }
+
+                this.Shot=this.Shot.bind(this);
+                this.drawNeko=this.drawNeko.bind(this);
+
+                //描画用タイマー
+                setInterval(this.drawNeko, 20);
+            }
+
+            //発射用トリガー
+            componentDidMount(){
+                window.addEventListener("keydown",this.Shot);
+                window.addEventListener("mousemove",this.MouseMove);
+            }
+            componentWillUnmount(){
+                window.removeEventListener("keydown",this.Shot);
+                window.removeEventListener("mousemove",this.MouseMove);
+            }
+
+            Shot(e){
+                let MaxSpeed=30
+                if (e.keyCode==16){
+                    this.setState({
+                        vx: Math.floor(Math.random()*MaxSpeed*2)-MaxSpeed,
+                        vy: Math.floor(Math.random()*MaxSpeed*2)-MaxSpeed
+                    })
+                }
+                //console.log(this.state);
+            }
+
+            drawNeko(){
+                var FieldWidth=500;
+                this.setState({
+                    vx: this.state.vx*0.98,
+                    vy: this.state.vy*0.98
+                })
+                // && this.state.vx<0&& 0<this.state.vx
+                if ((this.state.x+this.state.vx<10) || (FieldWidth<this.state.x+this.state.vx )){
+                    this.setState({
+                        vx: this.state.vx*-1
+                        
+                    })
+                }
+                // && this.state.vy<0&& 0<this,state.vy
+                if ((this.state.y+this.state.vy<10) || (FieldWidth<this.state.y+this.state.vy )){
+                    this.setState({
+                        vy: this.state.vy*-1
+                    })
+                }
+
+                this.setState({
+                    x: this.state.x+this.state.vx,
+                    y: this.state.y+this.state.vy
+                })
+                //console.log(this.state);
+            }
+
+            render(){
+                //console.log("Rending...")
+                //console.log(this.state.x)
+                var nekoStyle={
+                    position: "absolute",
+                    left: this.state.x,
+                    top: this.state.y
+                }
+                return(<div style={nekoStyle}>ฅ( ̳^• ·̫ • ̳^ฅ)و</div>);
+            }
+        }
+        ReactDOM.render(
+            <ShotNeko />,
+            document.getElementById("ShotNeko")
+        );
+
+        //setInterval　コンストラクタでってこれはこれで楽かも
+        class BrownNeko extends React.Component{
+            constructor(props){
+                super(props);
+                this.state={
+                    x: 50,
+                    y: 50
+                }
+
+                this.BrownMove=this.BrownMove.bind(this);
+                setInterval(this.BrownMove, 20);
+            }
+
+            BrownMove(){
+                var d=1;
+                //console.log(this.state);
+                if (Math.random()>=0.5){
+                    this.setState({
+                        x: this.state.x+d
+                    })
+                }
+                else{
+                    this.setState({
+                        x: this.state.x-d
+                    })
+                }
+
+                if (Math.random()>=0.5){
+                    this.setState({
+                        y: this.state.y+d
+                    })
+                }
+                else{
+                    this.setState({
+                        y: this.state.y-d
+                    })
+                }
+                //console.log(this.state.x);
+            }
+
+            render(){
+                //console.log("Rending...")
+                //console.log(this.state.x)
+                var nekoStyle={
+                    position: "absolute",
+                    left: this.state.x,
+                    top: this.state.y
+                }
+                return(<div style={nekoStyle}>ฅ ^=@ω@^=ฅ</div>);
+            }
+        }
+        ReactDOM.render(
+            <BrownNeko />,
+            document.getElementById("brownNeko")
+        );
+
+        //変数を用いてスタイルの適用をしてみる
+        class StampNeko extends React.Component{
+            constructor(props){
+                super (props);
+                this.state={
+                    x: 0,
+                    y: 0,
+                    stampsX: [],
+                    stampsY: [],
+                    NEKO: ["=･ω･=",
+                    "=^･ω･^=",
+                    "ฅ^･ω･^ ฅ",
+                    "~(=^･ω･^)",
+                    "~(=^･ω･^)ﾉ☆",
+                    "^Ф∀Ф^",
+                    "^ↀᴥↀ^"
+                    ],
+                };
+
+                this.MouseMove=this.MouseMove.bind(this);
+                this.NekoStamp=this.NekoStamp.bind(this);
+            }
+
+            componentDidMount(){
+                window.addEventListener("mousemove",this.MouseMove);
+                window.addEventListener("keydown",this.NekoStamp);
+            }
+            componentWillUnmount(){
+                window.removeEventListener("mousemove",this.MouseMove);
+                window.removeEventListener("keydown",this.NekoStamp);
+            }
+
+            MouseMove(e){
+                this.setState({
+                    x: e.clientX,
+                    y: e.clientY
+                })
+            //console.log(this.state.x);
+            }
+
+            NekoStamp(e){
+                if (e.keyCode==32){
+
+                    /*
+                    this.state.stampsX.some(arr =>{
+                        console.log(arr);
+                        console.log([this.state.x,this.state.y]);
+                        console.log(arr==[this.state.x,this.state.y].toString());
+                    });
+                    */
+
+                    if (!(this.state.stampsX.some(arr =>[arr[0],arr[1]]==[this.state.x,this.state.y].toString()))){
+                        this.setState({
+                            stampsX: this.state.stampsX.concat([[this.state.x,this.state.y,Math.floor(Math.random()*this.state.NEKO.length)]]),
+                            stampsY: this.state.stampsY.concat(this.state.y)
+                        })
+                    }
+                    //console.log(this.state.stampsX);
+                }
+                //console.log(e.keyCode);
+            }
+
+            render(){
+                return(
+                    <div>
+                        {
+                            this.state.stampsX.map(xy=>{
+                            let nekostyle=this.state.NEKO[xy[2]];
+                            let ss={
+                                position: "fixed",
+                                left: xy[0],
+                                top: xy[1] 
+                            }
+                            return(<h1 style={ss} key={xy.toString()} >{nekostyle}</h1>);
+                        })
+                    }
+                    </div>
+                );
+            }
+        }
+        ReactDOM.render(
+            <StampNeko />,
+            document.getElementById("nekoStamps")
+        );
+
+        //なるほどイベントハンドラとか。マウスのハンドラ
+        class OkkakeNeko extends React.Component{
+            constructor(props){
+                super (props);
+                this.state={
+                    x: 0,
+                    y: 0
+                };
+                this.MouseMove=this.MouseMove.bind(this);
+            }
+
+            //ブラウザに表示されないときはイベントを起こさないよ
+            componentDidMount(){
+                window.addEventListener("mousemove",this.MouseMove);
+                //this.MouseMove();
+            }
+            componentWillUnmount(){
+                window.removeEventListener("mouseMove",this.MouseMove);
+            }
+
+            MouseMove(e){
+                this.setState({
+                    x: e.clientX,
+                    y: e.clientY
+                })
+                //console.log(this.state);
+            }
+
+            render(){
+                var nekoStyle={
+                    position: "fixed",
+                    left: this.state.x,
+                    top: this.state.y
+                }
+                return(
+                    <div>
+                        <p style={nekoStyle}>
+                            o(^=・ω・=^o)=3=3
+                        </p>
+                    {/*{this.state.x}<br />
+                    {this.state.y}*/}
+                    </div>
+                );
+            }
+        }
+        ReactDOM.render(
+            <OkkakeNeko />
+            ,document.getElementById("mouseNeko")
+        );
+
+        //とりあえずあｓ....扱ってみる
+        class ButtonNeko extends React.Component{
+            //初期化だよ
+            constructor(props){
+                super (props);
+
+                this.state={
+                    x: 50,
+                    y: 50
+                };
+                this.moveDistance=10;
+
+                this.MoveLeft=this.MoveLeft.bind(this);
+                this.MoveRight=this.MoveRight.bind(this);
+                this.MoveDown=this.MoveDown.bind(this);
+                this.MoveUp=this.MoveUp.bind(this);
+            }
+
+            //移動だよ
+            MoveLeft(){
+                this.setState({x: this.state.x-this.moveDistance});
+            }
+            MoveRight(){
+                this.setState({x: this.state.x+this.moveDistance});
+            }
+            MoveDown(){
+                this.setState({y: this.state.y+this.moveDistance});
+            }
+            MoveUp(){
+                this.setState({y: this.state.y-this.moveDistance});
+            }
+
+            //stateの変化でレンダリングするよ
+            render(){
+                var nekoStyle={
+                    position: "relative",
+                    left: this.state.x,
+                    top: this.state.y
+                }
+                //console.log(pStyle);
+                return(
+                    <div>
+                    <button onClick={this.MoveLeft}>←</button>
+                    <button onClick={this.MoveRight}>→</button>
+                    <button onClick={this.MoveDown}>↓</button>
+                    <button onClick={this.MoveUp}>↑</button>
+
+                    <p style={nekoStyle}>
+                        =^・・^=
+                    </p>
+                    </div>
+                );
+            }
+        }
+        //レンダリング先（ここではid==stage）を指定するよ
+        ReactDOM.render(
+            <ButtonNeko />,
+            document.getElementById("stage")
+        );
+    </script> 
+</body>
+</html>
